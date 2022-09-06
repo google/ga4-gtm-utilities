@@ -135,7 +135,7 @@ function organizeParamsAndUserPropsByTag() {
       if (action == 'Create') {
         tagObj[tagId].create[type].push(buildMapObject(name, value));
       } else if (action == 'Delete') {
-        tagObj[tagId].remove[type].push({name: name, value:value});
+        tagObj[tagId].remove[type].push({name: name.toString(), value:value.toString()});
       }
     }
     return tagObj;
@@ -143,15 +143,26 @@ function organizeParamsAndUserPropsByTag() {
 }
 
 function removeParams(tagParamList, paramsToDelete) {
+  const newList = JSON.parse(JSON.stringify(tagParamList));
   if (paramsToDelete.length > 0) {
-    tagParamList.forEach((param, index) => {
+    tagParamList.forEach(param => {
       for (let i = 0; i < paramsToDelete.length; i++) {
-        if (param.map[0].value == paramsToDelete[i].name && param.map[1].value == paramsToDelete[i].value) {
-          tagParamList.splice(index, 1);
+        const originalParamName = param.map[0].value;
+        const originalParamValue = param.map[1].value;
+        const paramToDeleteName = paramsToDelete[i].name;
+        const paramToDeleteValue = paramsToDelete[i].value;
+        if (originalParamName == paramToDeleteName && originalParamValue == paramToDeleteValue) {
+          for (let newListIndex = 0; newListIndex < newList.length; newListIndex++) {
+            if(newList[newListIndex].map[0].value == paramToDeleteName && newList[newListIndex].map[1].value == paramToDeleteValue) {
+              newList.splice(newListIndex, 1);
+              break;
+            }
+          }
+          break;
         }
       }
     });
-    return tagParamList;
+    return newList;
   } else {
     return tagParamList;
   }
@@ -164,7 +175,7 @@ function generateSuccessfullActionTakenText(paramAndUserPropertySettings) {
     - Parameters created:`
     paramAndUserPropertySettings.create.parameter.forEach(param => {
       changes += `
-        - Name: ${param.map[0].value}, Value: ${param.map[0].value}`
+        - Name: ${param.map[0].value}, Value: ${param.map[1].value}`
     });
   }
   if (paramAndUserPropertySettings.create.user_property.length > 0) {
@@ -172,7 +183,7 @@ function generateSuccessfullActionTakenText(paramAndUserPropertySettings) {
     - User Properties created:`
     paramAndUserPropertySettings.create.user_property.forEach(prop => {
       changes += `
-        - Name: ${prop.map[0].value}, Value: ${prop.map[0].value}`
+        - Name: ${prop.map[0].value}, Value: ${prop.map[1].value}`
     });
   }
   if (paramAndUserPropertySettings.remove.parameter.length > 0) {
