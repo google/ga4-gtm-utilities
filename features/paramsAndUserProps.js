@@ -14,24 +14,43 @@
  * limitations under the License.
  */
 
+/**
+ * Writes the existing parameters and user properties to the sheet.
+ */
 function writeExistingParamsAndUserPropsToSheet() {
+  checkRelease();
   clearRangeContent('modifyParamsAndUserProps', 'settings');
   writeToSheet(listParamsAndUserProperties(), 'modifyParamsAndUserProps', 'settings');
 }
 
+/**
+ * Writes the existing GA4 event tags to the parameters and user properties sheet.
+ */
 function writeGA4TagsToParamsAndUserPropertiesSheet() {
+  checkRelease();
+  // Retrieve the GA4 event tags.
   const ga4EventTags = listGA4EventTags();
+  // Add specific event tag information to a double array to be written to the sheet.
   const formattedGA4EventTags = ga4EventTags.reduce((arr, tag) => {
-    arr.push([tag.name, tag.tagId, '', '', '']);
+    const eventName = tag.parameter.find(param => param.key == 'eventName').value;
+    arr.push([tag.name, tag.tagId, eventName, '', '', '']);
     return arr;
   }, []);
+  // Deletes existing content in the sheet.
   clearRangeContent('modifyParamsAndUserProps', 'settings');
+  // Writes data to the sheet.
   writeToSheet(formattedGA4EventTags, 'modifyParamsAndUserProps', 'settings');
 }
 
+/**
+ * Creates a list of all parameters and user properties that exist
+ * in all of the GA4 event properties in a Tag Manager workspace.
+ * @return {!Array<!Array<string, number, string, string, string>>}
+ */
 function listParamsAndUserProperties() {
   const ga4EventTags = listGA4EventTags();
   return ga4EventTags.reduce((arr, eventTag) => {
+    const eventName = eventTag.parameter.find(param => param.key == 'eventName').value;
     eventTag.parameter.forEach(param => {
       if (param.type == 'list') {
         let mapType = '';
@@ -45,6 +64,7 @@ function listParamsAndUserProperties() {
             arr.push([
               eventTag.name,
               eventTag.tagId,
+              eventName,
               mapType,
               map.map[0].value,
               map.map[1].value
@@ -53,6 +73,7 @@ function listParamsAndUserProperties() {
             arr.push([
               eventTag.name,
               eventTag.tagId,
+              eventName,
               mapType,
               map.map[1].value,
               map.map[0].value
@@ -65,6 +86,10 @@ function listParamsAndUserProperties() {
   }, []);
 }
 
+/** 
+ * Either adds or removes a user property or parameter from an event tag before
+ * sending an update request to change the tag in Tag Manager.
+ */
 function modifyParametersAndUserProperties() {
   const ga4EventTags = listGA4EventTags();
   const newSettings = organizeParamsAndUserPropsByTag();
@@ -111,14 +136,20 @@ function modifyParametersAndUserProperties() {
   });
 }
 
+/**
+ * Organizes the user property and parameter settings from the spreadsheet
+ * by tag insteady of by row so that the settings can be more easily applied to
+ * a given tag.
+ * @return {!Array<!Object>}
+ */
 function organizeParamsAndUserPropsByTag() {
   const data = getDataFromSheet('modifyParamsAndUserProps', 'settings');
   return data.reduce((tagObj, row) => {
     const tagId = row[1];
-    const type = row[2];
-    const name = row[3];
-    const value = row[4];
-    const action = row[5];
+    const type = row[3];
+    const name = row[4];
+    const value = row[5];
+    const action = row[6];
     if (/Create|Delete/.test(action)) {
       if (tagObj[tagId] == undefined) {
         tagObj[tagId] = {
@@ -142,6 +173,12 @@ function organizeParamsAndUserPropsByTag() {
   }, []);
 }
 
+/**
+ * Removes parameters or user properties from the params list in a tag.
+ * @param {!Array} tagParamList A list of parameters that already exist in a Tag Manager tag.
+ * @param {!Array} paramsToDelete A list of parameters that need to be removed from the Tag Manager list.
+ * @return {!Array}
+ */
 function removeParams(tagParamList, paramsToDelete) {
   const newList = JSON.parse(JSON.stringify(tagParamList));
   if (paramsToDelete.length > 0) {
@@ -168,6 +205,12 @@ function removeParams(tagParamList, paramsToDelete) {
   }
 }
 
+/**
+ * Create the change log text for the changes made to a given tag.
+ * @param {!Array} paramAndUserPropertySettings A list of changes that were made
+ * for a given tag.
+ * @return {string}
+ */
 function generateSuccessfullActionTakenText(paramAndUserPropertySettings) {
   let changes = 'The following has been modified in this tag:';
   if (paramAndUserPropertySettings.create.parameter.length > 0) {

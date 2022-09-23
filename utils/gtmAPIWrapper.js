@@ -26,6 +26,9 @@ const gtmAPIResources = {
 
 const gtmRequestDelay = 4000;
 
+/**
+ * Retrieves the correct GTM resource object.
+ */
 function gtmResources() {
   const resources = {}
   for (let field in gtmAPIResources) {

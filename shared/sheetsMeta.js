@@ -69,13 +69,13 @@ const sheetsMeta = {
         row: 2,
         column: 1,
         numRows: 1,
-        numColumns: 6
+        numColumns: 7
       },
       write: {
         row: 2,
         column: 1,
         numRows: 1,
-        numColumns: 5
+        numColumns: 6
       }
     }]
   },
@@ -92,6 +92,38 @@ const sheetsMeta = {
       write: {
         row: 2,
         column: 1,
+        numRows: 1,
+        numColumns: 1
+      }
+    }]
+  },
+  settings: {
+    sheetName: 'Settings',
+    ranges: [{
+      name: 'dismissed update',
+      read: {
+        row: 2,
+        column: 2,
+        numRows: 1,
+        numColumns: 1
+      },
+      write: {
+        row: 2,
+        column: 2,
+        numRows: 1,
+        numColumns: 1
+      }
+    }, {
+      name: 'release',
+      read: {
+        row: 1,
+        column: 2,
+        numRows: 1,
+        numColumns: 1
+      },
+      write: {
+        row: 1,
+        column: 2,
         numRows: 1,
         numColumns: 1
       }
