@@ -18,7 +18,6 @@
  * Writes the existing parameters and user properties to the sheet.
  */
 function writeExistingParamsAndUserPropsToSheet() {
-  checkRelease();
   clearRangeContent('modifyParamsAndUserProps', 'settings');
   writeToSheet(listParamsAndUserProperties(), 'modifyParamsAndUserProps', 'settings');
 }
@@ -27,9 +26,9 @@ function writeExistingParamsAndUserPropsToSheet() {
  * Writes the existing GA4 event tags to the parameters and user properties sheet.
  */
 function writeGA4TagsToParamsAndUserPropertiesSheet() {
-  checkRelease();
+  const tags = listGTMResources('tags', getSelectedWorkspacePath());
   // Retrieve the GA4 event tags.
-  const ga4EventTags = listGA4EventTags();
+  const ga4EventTags = listGA4EventTags(tags);
   // Add specific event tag information to a double array to be written to the sheet.
   const formattedGA4EventTags = ga4EventTags.reduce((arr, tag) => {
     const eventName = tag.parameter.find(param => param.key == 'eventName').value;
@@ -48,7 +47,8 @@ function writeGA4TagsToParamsAndUserPropertiesSheet() {
  * @return {!Array<!Array<string, number, string, string, string>>}
  */
 function listParamsAndUserProperties() {
-  const ga4EventTags = listGA4EventTags();
+  const tags = listGTMResources('tags', getSelectedWorkspacePath());
+  const ga4EventTags = listGA4EventTags(tags);
   return ga4EventTags.reduce((arr, eventTag) => {
     const eventName = eventTag.parameter.find(param => param.key == 'eventName').value;
     eventTag.parameter.forEach(param => {
@@ -91,7 +91,8 @@ function listParamsAndUserProperties() {
  * sending an update request to change the tag in Tag Manager.
  */
 function modifyParametersAndUserProperties() {
-  const ga4EventTags = listGA4EventTags();
+  const tags = listGTMResources('tags', getSelectedWorkspacePath());
+  const ga4EventTags = listGA4EventTags(tags);
   const newSettings = organizeParamsAndUserPropsByTag();
   ga4EventTags.forEach(tag => {
     if (newSettings[tag.tagId]) {

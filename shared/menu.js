@@ -30,6 +30,11 @@ function onOpen() {
   .addItem('List Existing GA4 Tags', 'writeGA4TagsToParamsAndUserPropertiesSheet')
   .addItem('Modify Parameters and User Properties', 'modifyParametersAndUserProperties');
 
+  const eventTags = ui
+  .createMenu('Event Tags')
+  .addItem('List GA4 Event Tags', 'writeGA4EventTagstoSheet')
+  .addItem('Modify GA4 Event Tags', 'modifyGA4EventTags');
+
   const listVariables = ui
   .createMenu('(Optional) GTM Variables')
   .addItem('Add GTM Variable Dropdown List Items', 'writeGTMVariablesToValidationSheet');
@@ -38,6 +43,7 @@ function onOpen() {
   .createMenu('GA4 GTM Utilities')
   .addSubMenu(workspaceSubMenu)
   .addSubMenu(modifyParamsAndUserProperties)
+  .addSubMenu(eventTags)
 	.addSeparator()
   .addSubMenu(listVariables)
   .addToUi();

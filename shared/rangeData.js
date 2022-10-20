@@ -15,7 +15,7 @@
  */
 
 const sheetsMeta = {
-    gtmWorkspace: {
+  gtmWorkspace: {
     sheetName: 'GTM Workspace',
     ranges: [{
       name: 'accounts list',
@@ -94,6 +94,52 @@ const sheetsMeta = {
         column: 1,
         numRows: 1,
         numColumns: 1
+      }
+    }, {
+      name: 'tag names',
+      read: {
+        row: 2,
+        column: 4,
+        numRows: 1,
+        numColumns: 1
+      },
+      write: {
+        row: 2,
+        column: 4,
+        numRows: 1,
+        numColumns: 1
+      }
+    }, {
+      name: 'config tag names',
+      read: {
+        row: 2,
+        column: 3,
+        numRows: 1,
+        numColumns: 1
+      },
+      write: {
+        row: 2,
+        column: 3,
+        numRows: 1,
+        numColumns: 1
+      }
+    }]
+  },
+  eventTags: {
+    sheetName: 'Event Tag Settings',
+    ranges: [{
+      name: 'tags',
+      read: {
+        row: 2,
+        column: 1,
+        numRows: 1,
+        numColumns: 26
+      }, 
+      write: {
+        row: 2,
+        column: 1,
+        numRows: 1,
+        numColumns: 22
       }
     }]
   },

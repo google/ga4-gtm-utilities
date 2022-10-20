@@ -121,3 +121,19 @@ function updateGTMResource(resourceKey, path, payload) {
     return 'error';
   }
 }
+
+/**
+ * Remove a GTM tag.
+ * @param {string} resourceKey The resource type to be created.
+ * @param {string} path
+ */
+function removeGTMResource(resourceKey, path) {
+  try {
+    const response = gtmAPIResources[resourceKey].delete(payload, path);
+    Utilities.sleep(gtmRequestDelay);
+    return response;
+  } catch(e) {
+    console.log(e)
+    return 'error';
+  } 
+}

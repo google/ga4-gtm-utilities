@@ -37,8 +37,7 @@ const GA4TagTypes = {
  * list GA4 event tags from a list of all tags in a workspace.
  * @return {!Array} List of GA4 event tags in a workspace.
  */
-function listGA4EventTags() {
-  const tags = listGTMResources('tags', getSelectedWorkspacePath());
+function listGA4EventTags(tags) {
   return tags.filter(tag => tag.type == GA4TagTypes.EVENT);
 }
 
@@ -80,6 +79,7 @@ function writeToSheet(data, sheetName, rangeName) {
   if (data.length > 0) {
     sheet.getRange(ranges.row, ranges.column, data.length, ranges.numColumns).setValues(data);
   }
+  checkRelease();
 }
 
 /**
@@ -143,4 +143,30 @@ function logChange(entityName, entityType, entityId, actionTaken, gtmURL) {
 		currentDateTime, entityName, entityType, entityId, actionTaken, gtmURL, user
 	]];
   sheet.getRange((sheet.getLastRow() + 1), 1, 1, 7).setValues(loggedChange);
+}
+
+/**
+ * Writes tag names to the validation sheet.
+ * @param {!Array} tags An array of tags in a workspace.
+ */
+function writeTagNamesToValidationSheet(tags) {
+  const tagNames = tags.reduce((arr, tag) => {
+    arr.push([tag.name]);
+    return arr;
+  }, []);
+  writeToSheet(tagNames, 'validation', 'tag names')
+}
+
+/**
+ * Writes config tag names to the validation sheet.
+ * @param {!Array} tags An array of tags in a workspace.
+ */
+function writeConfigTagNamesToValidationSheet(tags) {
+  const tagNames = tags.reduce((arr, tag) => {
+    if (tag.type == 'gaawc') {
+      arr.push([tag.name]);
+    }
+    return arr;
+  }, []);
+  writeToSheet(tagNames, 'validation', 'config tag names');
 }

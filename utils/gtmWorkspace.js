@@ -75,3 +75,18 @@ function getSelectedWorkspacePath() {
    return selectedWorkspace[0][1];
   }
 }
+
+/**
+ * Gets the selected workspace name from the GTM Workspace sheet.
+ * return {string} The selected workspace name.
+ */
+function getSelectedWorkspaceName() {
+  const workspaces = getDataFromSheet('gtmWorkspace', 'workspaces list');
+  const selectedWorkspace = workspaces.filter(workspace => workspace[2]);
+  if (selectedWorkspace.length == 0) {
+    ui.alert(messageText.missingGTMWorkspace);
+    return '';
+  } else {
+   return selectedWorkspace[0][0];
+  }
+}
