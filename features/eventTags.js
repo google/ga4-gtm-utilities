@@ -22,18 +22,33 @@ function writeGA4EventTagstoSheet() {
   const workspaceName = getSelectedWorkspaceName();
   const tags = listGTMResources('tags', workspacePath);
   const triggers = listGTMResources('triggers', workspacePath);
+  triggers.push({
+    triggerId: '2147479553',
+    name: 'All Pages'
+  }, {
+    triggerId: '2147479572',
+    name: 'Consent Initialization - All Pages'
+  }, {
+    triggerId: '2147479573',
+    name: 'Initialization - All Pages'
+  });
   // Retrieve the GA4 event tags.
   const ga4EventTags = listGA4EventTags(tags);
   clearRangeContent('validation', 'config tag names');
   writeConfigTagNamesToValidationSheet(tags);
-  // Add specific event tag information to a double array to be written to the sheet.
+  clearRangeContent('validation', 'tag names');
+  writeTagNamesToValidationSheet(tags);
+  // Add specific event tag information to a double array to be written to the 
+  // sheet.
   const formattedGA4EventTags = ga4EventTags.reduce((arr, tag) => {
     const tempArray = [];
-    while (tempArray.length < 22) {
+    while (tempArray.length < 23) {
       tempArray.push('');
     }
-    const sendEcommerceData = tag.parameter.find(param => param.key == 'sendEcommerceData');
-    const getEcommerceDataFrom = tag.parameter.find(param => param.key == 'getEcommerceDataFrom');
+    const sendEcommerceData = tag.parameter.find(
+      param => param.key == 'sendEcommerceData');
+    const getEcommerceDataFrom = tag.parameter.find(
+      param => param.key == 'getEcommerceDataFrom');
 
     tempArray[0] = workspaceName;
     tempArray[1] = workspacePath;
@@ -49,10 +64,12 @@ function writeGA4EventTagstoSheet() {
       if (getEcommerceDataFrom.value == 'dataLayer') {
         tempArray[7] = 'dataLayer';
       } else {
-        tempArray[7] = tag.parameter.find(param => param.key == 'ecommerceMacroData').value;
+        tempArray[7] = tag.parameter.find(
+          param => param.key == 'ecommerceMacroData').value;
       }
     }
-    tempArray[8] = tag.parameter.find(param => param.key == 'measurementId').value;
+    tempArray[8] = tag.parameter.find(
+      param => param.key == 'measurementId').value;
     if (tag.priority != undefined) {
       tempArray[9] = tag.priority.value;
     }
@@ -70,18 +87,20 @@ function writeGA4EventTagstoSheet() {
     tempArray[17] = tag.tagFiringOption;
     tempArray[18] = tag.consentSettings.consentStatus;
     if (tag.consentSettings.consentStatus == 'needed') {
-      tempArray[19] = tag.consentSettings.consentType.list.reduce((arr, consentType) => {
+      tempArray[19] = tag.consentSettings.consentType.list
+      .reduce((arr, consentType) => {
         arr.push(consentType.value); 
         return arr;
       }, []).join(', ');
-      console.log(tempArray[19]);
     }
     tempArray[20] = tag.monitoringMetadataTagNameKey;
     if (tag.firingTriggerId != undefined) {
-      tempArray[21] = convertTriggerIdsToNames(tag.firingTriggerId, triggers).join(', ');
+      tempArray[21] = convertTriggerIdsToNames(
+        tag.firingTriggerId, triggers).join(', ');
     }
     if (tag.blockingTriggerId != undefined) {
-      tempArray[22] = convertTriggerIdsToNames(tag.blockingTriggerId, triggers).join(', ');
+      tempArray[22] = convertTriggerIdsToNames(
+        tag.blockingTriggerId, triggers).join(', ');
     } 
     arr.push(tempArray);
     return arr;
@@ -105,23 +124,50 @@ function modifyGA4EventTags() {
     const update = newSettings[newSettings.length - 2];
     const remove = newSettings[newSettings.length - 1];
     if (create && !update && !remove) {
-      const payload = buildGA4EventPayload(newSettings, triggers, tags, 'create');
-      const newTag = createGTMResource('tags', newSettings[1], payload);
-      logChange(newTag.name, newTag.type, newTag.tagId, 'created', newTag.tagManagerUrl);
+      // Create a new tag.
+      const payload = buildGA4EventPayload(
+        newSettings, triggers, tags, 'create');
+      const response = createGTMResource('tags', newSettings[1], payload);
+      if (response.tagManagerUrl) {
+        // Write succesful tag creation to sheet.
+        logChange(response.name, response.type, response.tagId, 'created',
+          response.tagManagerUrl);
+      } else {
+        // Write error message to sheet.
+        logChange(newSettings[2], '',  '', errorResponse(response), '');
+      }  
     } else if (!create && update && !remove) {
-      const payload = buildGA4EventPayload(newSettings, triggers, tags, 'update');
-      const newTag = updateGTMResource('tags', `${newSettings[1]}/tags/${newSettings[3]}`, payload);
-      logChange(newTag.name, newTag.type, newTag.tagId, 'updated', newTag.tagManagerUrl);
+      // Update an existing tag.
+      const payload = buildGA4EventPayload(
+        newSettings, triggers, tags, 'update');
+      const response = updateGTMResource(
+        'tags', `${newSettings[1]}/tags/${newSettings[3]}`, payload);
+      if (response.tagManagerUrl) {
+        // Write a successful tag update to sheet.
+        logChange(response.name, response.type, response.tagId, 'updated',
+          response.tagManagerUrl);
+      } else {
+        // Write error message to sheet.
+        logChange(newSettings[2], '',  '', errorResponse(response), '');
+      }
     } else if (!create && !update && remove) {
-      removeGTMResource('tags', `${newSettings[1]}/tags/${newSettings[3]}`);
-      logChange(newSettings[2], 'gaawe', newSettings[3], 'removed', '');
+      // Remove an existing tag.
+      const response = removeGTMResource(
+        'tags', `${newSettings[1]}/tags/${newSettings[3]}`);
+      if (response.details) {
+        // Write error message to sheet.
+        logChange(newSettings[2], '',  '', errorResponse(response), '');
+      } else {
+        // Write successful tag deletion to sheet.
+        logChange(newSettings[2], 'gaawe', newSettings[3], 'removed', '');
+      }
     }
   });
 }
 
 /**
- * Builds the GA4 event payload when either creating a new tag or updating and existing
- * event tag.
+ * Builds the GA4 event payload when either creating a new tag or updating an 
+ * existing event tag.
  * @param {!Array} settings The settings from the sheet.
  * @param {!Array} triggers Existing triggers in the workspace.
  * @param {!Array} tags Existing tags in the workspace
@@ -150,28 +196,16 @@ function buildGA4EventPayload(settings, triggers, tags, modifyOption) {
   const metadataTagName = settings[20];
   const firingTriggerNames = settings[21];
   const blockingTriggerNames = settings[22];
-  const firingTriggerIds = convertTriggerNamesToIds(firingTriggerNames, triggers);
-  const blockingTriggerIds = convertTriggerNamesToIds(blockingTriggerNames, triggers);
+  const firingTriggerIds = convertTriggerNamesToIds(
+    firingTriggerNames, triggers);
+  const blockingTriggerIds = convertTriggerNamesToIds(
+    blockingTriggerNames, triggers);
 
   const newTag = {
     type: 'gaawe',
     name: tagName,
     paused: paused,
-    priority: {
-      type: 'integer',
-      value: tagFiringPriority
-    },
-    scheduleStartMs: scheduleStart,
-    scheduleEndMs: scheduleEnd,
     liveOnly: onlyFireInPublished,
-    setupTag: [{
-      tagName: setupTag,
-      stopOnSetupFailure: stopOnSetupFailure
-    }],
-    teardownTag: [{
-      tagName: teardownTag,
-      stopTeardownOnFailure: stopTeardownOnFailure
-    }],
     tagFiringOption: tagFiringOption,
     consentSettings: {
       consentStatus: consentStatus
@@ -189,7 +223,30 @@ function buildGA4EventPayload(settings, triggers, tags, modifyOption) {
       value: configData
     }]
   }
-
+  if (setupTag.length > 0) {
+    newTag.setupTag = [{
+      tagName: setupTag,
+      stopOnSetupFailure: stopOnSetupFailure
+    }];
+  }
+  if (teardownTag.length > 0) {
+    newTag.teardownTag = [{
+      tagName: teardownTag,
+      stopTeardownOnFailure: stopTeardownOnFailure
+    }];
+  }
+  if (/^[0-9]+$/.test(tagFiringPriority)) {
+    tag.priority = {
+      type: 'integer',
+      value: parseInt(tagFiringPriority)
+    }
+  }
+  if (/^[0-9]+$/.test(scheduleStart)) {
+    newTag.scheduleStartMs = parseInt(scheduleStart);
+  }
+  if (/^[0-9]+$/.test(scheduleEnd)) {
+    newTag.scheduleEndMs = praseInt(scheduleEnd);
+  }
   if (sendEcommData) {
     newTag.parameter.push({
       type: 'boolean',
@@ -247,6 +304,16 @@ function buildGA4EventPayload(settings, triggers, tags, modifyOption) {
  */
 function convertTriggerIdsToNames(ids, triggers) {
   const names = [];
+  triggers.push({
+    triggerId: '2147479553',
+    name: 'All Pages'
+  }, {
+    triggerId: '2147479572',
+    name: 'Consent Initialization - All Pages'
+  }, {
+    triggerId: '2147479573',
+    name: 'Initialization - All Pages'
+  });
   if (ids.length > 0) {
     ids.forEach(id => {
       names.push(triggers.find(trigger => trigger.triggerId == id.trim()).name);
@@ -263,10 +330,21 @@ function convertTriggerIdsToNames(ids, triggers) {
  */
 function convertTriggerNamesToIds(names, triggers) {
   const ids = []
+  triggers.push({
+    triggerId: '2147479553',
+    name: 'All Pages'
+  }, {
+    triggerId: '2147479572',
+    name: 'Consent Initialization - All Pages'
+  }, {
+    triggerId: '2147479573',
+    name: 'Initialization - All Pages'
+  });
   if (names.length > 0) {
     names = names.split(',');
     names.forEach(name => {
-      ids.push(triggers.find(trigger => trigger.name == name.trim()).triggerId.toString());
+      ids.push(triggers.find(
+        trigger => trigger.name == name.trim()).triggerId.toString());
     });
   }
   return ids;

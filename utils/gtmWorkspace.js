@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,13 @@ function writeGtmAccountsToSheet() {
 function writeSelectedGtmContainersToSheet() {
   const accounts = getDataFromSheet('gtmWorkspace', 'accounts list');
   const selectedAccounts = accounts.filter(account => account[2]);
-  const containers = listGTMResources('containers', selectedAccounts[0][1]);
+  let containers = [];
+  if (selectedAccounts) {
+    selectedAccounts.forEach(account => {
+      containers = containers.concat(
+        listGTMResources('containers', account[1]));
+    });
+  }
   if (containers.length > 0) {
     const formattedContainers = containers.reduce((arr, container) => {
       arr.push([container.name, container.path]);
@@ -51,7 +57,13 @@ function writeSelectedGtmContainersToSheet() {
 function writeSelectedGtmWorkspacesToSheet() {
   const containers = getDataFromSheet('gtmWorkspace', 'containers list');
   const selectedContainers = containers.filter(container => container[2]);
-  const workspaces = listGTMResources('workspaces', selectedContainers[0][1]);
+  let workspaces = [];
+  if (selectedContainers) {
+    selectedContainers.forEach(container => {
+      workspaces = workspaces.concat(
+        listGTMResources('workspaces', container[1]));
+    });
+  }
   if (workspaces.length > 0) {
     const formattedWorkspaces = workspaces.reduce((arr, workspace) => {
       arr.push([workspace.name, workspace.path]);

@@ -139,7 +139,25 @@ const sheetsMeta = {
         row: 2,
         column: 1,
         numRows: 1,
-        numColumns: 22
+        numColumns: 23
+      }
+    }]
+  },
+  tagDataDictionary: {
+    sheetName: 'Tag Data Dictionary',
+    ranges: [{
+      name: 'tag info',
+      read: {
+        row: 2,
+        column: 1,
+        numRows: 1,
+        numColumns: 7
+      }, 
+      write: {
+        row: 2,
+        column: 1,
+        numRows: 1,
+        numColumns: 7
       }
     }]
   },
@@ -172,6 +190,24 @@ const sheetsMeta = {
         column: 2,
         numRows: 1,
         numColumns: 1
+      }
+    }]
+  },
+  variableUsage: {
+    sheetName: 'Variable Usage',
+    ranges: [{
+      name: 'all usage',
+      read: {
+        row: 2,
+        column: 1,
+        numRows: 1,
+        numColumns: 9
+      },
+      write: {
+        row: 2,
+        column: 1,
+        numRows: 1,
+        numColumns: 8
       }
     }]
   }

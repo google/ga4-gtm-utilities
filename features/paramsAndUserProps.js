@@ -19,19 +19,23 @@
  */
 function writeExistingParamsAndUserPropsToSheet() {
   clearRangeContent('modifyParamsAndUserProps', 'settings');
-  writeToSheet(listParamsAndUserProperties(), 'modifyParamsAndUserProps', 'settings');
+  writeToSheet(
+    listParamsAndUserProperties(), 'modifyParamsAndUserProps', 'settings');
 }
 
 /**
- * Writes the existing GA4 event tags to the parameters and user properties sheet.
+ * Writes the existing GA4 event tags to the parameters and user properties 
+ * sheet.
  */
 function writeGA4TagsToParamsAndUserPropertiesSheet() {
   const tags = listGTMResources('tags', getSelectedWorkspacePath());
   // Retrieve the GA4 event tags.
   const ga4EventTags = listGA4EventTags(tags);
-  // Add specific event tag information to a double array to be written to the sheet.
+  // Add specific event tag information to a double array to be written to the 
+  // sheet.
   const formattedGA4EventTags = ga4EventTags.reduce((arr, tag) => {
-    const eventName = tag.parameter.find(param => param.key == 'eventName').value;
+    const eventName = tag.parameter.find(
+      param => param.key == 'eventName').value;
     arr.push([tag.name, tag.tagId, eventName, '', '', '']);
     return arr;
   }, []);
@@ -50,7 +54,8 @@ function listParamsAndUserProperties() {
   const tags = listGTMResources('tags', getSelectedWorkspacePath());
   const ga4EventTags = listGA4EventTags(tags);
   return ga4EventTags.reduce((arr, eventTag) => {
-    const eventName = eventTag.parameter.find(param => param.key == 'eventName').value;
+    const eventName = eventTag.parameter.find(
+      param => param.key == 'eventName').value;
     eventTag.parameter.forEach(param => {
       if (param.type == 'list') {
         let mapType = '';
@@ -102,36 +107,46 @@ function modifyParametersAndUserProperties() {
       tag.parameter.forEach(param => {
         if (param.type == 'list') {
           if (param.key == 'eventParameters') {
-            param.list = removeParams(param.list, paramAndUserPropertySettings.remove.parameter);
-            param.list = param.list.concat(paramAndUserPropertySettings.create.parameter);
+            param.list = removeParams(
+              param.list, paramAndUserPropertySettings.remove.parameter);
+            param.list = param.list.concat(
+              paramAndUserPropertySettings.create.parameter);
             parametersAdded = true;
           } else if (param.key == 'userProperties') {
-            param.list = removeParams(param.list, paramAndUserPropertySettings.remove.user_property)
-            param.list = param.list.concat(paramAndUserPropertySettings.create.user_property);
+            param.list = removeParams(
+              param.list, paramAndUserPropertySettings.remove.user_property)
+            param.list = param.list.concat(
+              paramAndUserPropertySettings.create.user_property);
             userPropertiesAdded = true;
           }
         }
       });
-      if (!parametersAdded && paramAndUserPropertySettings.create.parameter.length > 0) {
+      if (!parametersAdded && 
+      paramAndUserPropertySettings.create.parameter.length > 0) {
         tag.parameter.push({
           type: 'list',
           key: 'eventParameters',
           list: paramAndUserPropertySettings.create.parameter
         });
       }
-      if (!userPropertiesAdded && paramAndUserPropertySettings.create.user_property.length > 0) {
+      if (!userPropertiesAdded && 
+      paramAndUserPropertySettings.create.user_property.length > 0) {
         tag.parameter.push({
           type: 'list',
           key: 'userProperties',
           list: paramAndUserPropertySettings.create.user_property
         });
       }
-      const result = updateGTMResource('tags', getSelectedWorkspacePath() + '/tags/' + tag.tagId, tag);
-      if (result != 'error') {
-        const actionTaken = generateSuccessfullActionTakenText(newSettings[tag.tagId]);
-        logChange(tag.name, tag.type, tag.tagId, actionTaken, tag.tagManagerUrl)
+      const response = updateGTMResource(
+        'tags', getSelectedWorkspacePath() + '/tags/' + tag.tagId, tag);
+      if (response.tagManagerUrl) {
+        const actionTaken = generateSuccessfullActionTakenText(
+          newSettings[tag.tagId]);
+        logChange(response.name, response.type, response.tagId, actionTaken, 
+          response.tagManagerUrl)
       } else {
-        logChange(tag.name, tag.type, tag.tagId, 'No Change - Parameter Modification Failed', tag.tagManagerUrl)
+        logChange(tag.name, tag.type, tag.tagId, errorResponse(response), 
+          tag.tagManagerUrl)
       }
     }
   });
@@ -167,7 +182,8 @@ function organizeParamsAndUserPropsByTag() {
       if (action == 'Create') {
         tagObj[tagId].create[type].push(buildMapObject(name, value));
       } else if (action == 'Delete') {
-        tagObj[tagId].remove[type].push({name: name.toString(), value:value.toString()});
+        tagObj[tagId].remove[type].push(
+          {name: name.toString(), value:value.toString()});
       }
     }
     return tagObj;
@@ -176,8 +192,10 @@ function organizeParamsAndUserPropsByTag() {
 
 /**
  * Removes parameters or user properties from the params list in a tag.
- * @param {!Array} tagParamList A list of parameters that already exist in a Tag Manager tag.
- * @param {!Array} paramsToDelete A list of parameters that need to be removed from the Tag Manager list.
+ * @param {!Array} tagParamList A list of parameters that already exist in a 
+ * Tag Manager tag.
+ * @param {!Array} paramsToDelete A list of parameters that need to be removed 
+ * from the Tag Manager list.
  * @return {!Array}
  */
 function removeParams(tagParamList, paramsToDelete) {
@@ -189,9 +207,12 @@ function removeParams(tagParamList, paramsToDelete) {
         const originalParamValue = param.map[1].value;
         const paramToDeleteName = paramsToDelete[i].name;
         const paramToDeleteValue = paramsToDelete[i].value;
-        if (originalParamName == paramToDeleteName && originalParamValue == paramToDeleteValue) {
-          for (let newListIndex = 0; newListIndex < newList.length; newListIndex++) {
-            if(newList[newListIndex].map[0].value == paramToDeleteName && newList[newListIndex].map[1].value == paramToDeleteValue) {
+        if (originalParamName == paramToDeleteName && 
+        originalParamValue == paramToDeleteValue) {
+          for (let newListIndex = 0; newListIndex < newList.length; 
+          newListIndex++) {
+            if(newList[newListIndex].map[0].value == paramToDeleteName && 
+            newList[newListIndex].map[1].value == paramToDeleteValue) {
               newList.splice(newListIndex, 1);
               break;
             }

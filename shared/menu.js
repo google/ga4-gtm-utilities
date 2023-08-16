@@ -39,11 +39,17 @@ function onOpen() {
   .createMenu('(Optional) GTM Variables')
   .addItem('Add GTM Variable Dropdown List Items', 'writeGTMVariablesToValidationSheet');
 
+  const variableUsage = ui
+  .createMenu('Variable Usage')
+  .addItem('List', 'writeVariableUsageToSheet')
+  .addItem('Delete', 'deleteUsageVariables')
+
   ui
   .createMenu('GA4 GTM Utilities')
   .addSubMenu(workspaceSubMenu)
   .addSubMenu(modifyParamsAndUserProperties)
   .addSubMenu(eventTags)
+  .addSubMenu(variableUsage)
 	.addSeparator()
   .addSubMenu(listVariables)
   .addToUi();

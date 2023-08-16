@@ -36,31 +36,26 @@ function checkRelease() {
         'https://api.github.com/repos/google/ga4-gtm-utilities/releases'
       ).getContentText());
     const sheetReleaseVersion = getDataFromSheet('settings', 'release')[0][0].split('v')[1].split('.');
-    for (let i = 0; i < releases.length; i++) {
-      const release = releases[i];
-      const version = release.tag_name.split('v')[1].split('.');
-      const title = 'Update Avilable';
-      const message = messageText.newRelease + release.body + `
-      
-      ` + release.html_url;
-      if (parseInt(sheetReleaseVersion[0]) < parseInt(version[0])) {
-        const response = ui.alert(title, message, ui.ButtonSet.OK);
-        if (response == ui.Button.OK || response == ui.Button.CLOSE) {
-          writeToSheet([['Dismissed']], 'settings', 'dismissed update');
-        }
-        break;
-      } else if (parseInt(sheetReleaseVersion[1]) < parseInt(version[1])) {
-        const response = ui.alert(title, message, ui.ButtonSet.OK);
-        if (response == ui.Button.OK || response == ui.Button.CLOSE) {
-          writeToSheet([['Dismissed']], 'settings', 'dismissed update');
-        }
-        break;
-      } else if (parseInt(sheetReleaseVersion[2]) < parseInt(version[2])) {
-        const response = ui.alert(title, message, ui.ButtonSet.OK);
-        if (response == ui.Button.OK || response == ui.Button.CLOSE) {
-          writeToSheet([['Dismissed']], 'settings', 'dismissed update');
-        }
-        break;
+    const release = releases[0];
+    const version = release.tag_name.split('v')[1].split('.');
+    const title = 'Update Avilable';
+    const message = messageText.newRelease + release.body + `
+    
+    ` + release.html_url;
+    if (parseInt(sheetReleaseVersion[0]) < parseInt(version[0])) {
+      const response = ui.alert(title, message, ui.ButtonSet.OK);
+      if (response == ui.Button.OK || response == ui.Button.CLOSE) {
+        writeToSheet([['Dismissed']], 'settings', 'dismissed update');
+      }
+    } else if (parseInt(sheetReleaseVersion[1]) < parseInt(version[1])) {
+      const response = ui.alert(title, message, ui.ButtonSet.OK);
+      if (response == ui.Button.OK || response == ui.Button.CLOSE) {
+        writeToSheet([['Dismissed']], 'settings', 'dismissed update');
+      }
+    } else if (parseInt(sheetReleaseVersion[2]) < parseInt(version[2])) {
+      const response = ui.alert(title, message, ui.ButtonSet.OK);
+      if (response == ui.Button.OK || response == ui.Button.CLOSE) {
+        writeToSheet([['Dismissed']], 'settings', 'dismissed update');
       }
     }
   }

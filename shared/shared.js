@@ -170,3 +170,12 @@ function writeConfigTagNamesToValidationSheet(tags) {
   }, []);
   writeToSheet(tagNames, 'validation', 'config tag names');
 }
+
+/**
+ * Returns readable error response.
+ * @param {!Object} response Error response object
+ * @return {string}
+ */
+function errorResponse(response) {
+  return `Error ${response.statusCode}: ' ${response.message}`;
+}

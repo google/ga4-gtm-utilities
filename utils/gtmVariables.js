@@ -26,7 +26,6 @@ function writeGTMVariablesToValidationSheet() {
   writeToSheet(formattedVariables, 'validation', 'gtm variables');
 }
 
-
 /**
  * Changes an array of variable objects into a double array of variable names.
  * Double curly brackets are added to the begginning and end of each variable
