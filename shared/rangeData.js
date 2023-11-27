@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ const sheetsMeta = {
         numColumns: 1
       }
     }, {
-      name: 'config tag names',
+      name: 'event setting variable names',
       read: {
         row: 2,
         column: 3,
@@ -133,13 +133,13 @@ const sheetsMeta = {
         row: 2,
         column: 1,
         numRows: 1,
-        numColumns: 26
+        numColumns: 27
       }, 
       write: {
         row: 2,
         column: 1,
         numRows: 1,
-        numColumns: 23
+        numColumns: 24
       }
     }]
   },

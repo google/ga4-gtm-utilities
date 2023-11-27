@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,6 @@ function writeToSheet(data, sheetName, rangeName) {
   if (data.length > 0) {
     sheet.getRange(ranges.row, ranges.column, data.length, ranges.numColumns).setValues(data);
   }
-  checkRelease();
 }
 
 /**
@@ -115,14 +114,30 @@ function clearRangeContent(sheetsMetaField, rangeName) {
  * @param {string} value The value of the entity being mapped.
  * @return {!Object} The map object that can be added to a tag or variable.
  */
-function buildMapObject (name, value) {
-	return {
-		map: [
-			{value: name, type: 'template', key: 'name'},
-			{value: value.toString(), type: 'template', key: 'value'}
-		],
-		type: 'map'
-	};
+function buildParameterMapObject(name, value) {
+  return {
+    map: [
+      {value: name, type: 'template', key: 'parameter'},
+      {value: value.toString(), type: 'template', key: 'parameterValue'}
+    ],
+    type: 'map'
+  };
+}
+
+/**
+ * Builds the map object for user properties.
+ * @param {string} name The name of the entity being mapped.
+ * @param {string} value The value of the entity being mapped.
+ * @return {!Object} The map object that can be added to a tag or variable.
+ */
+function buildUserPropertyMapObject (name, value) {
+  return {
+    map: [
+      {value: name, type: 'template', key: 'name'},
+      {value: value.toString(), type: 'template', key: 'value'}
+    ],
+    type: 'map'
+  };
 }
 
 /**
@@ -158,17 +173,17 @@ function writeTagNamesToValidationSheet(tags) {
 }
 
 /**
- * Writes config tag names to the validation sheet.
- * @param {!Array} tags An array of tags in a workspace.
+ * Writes event setting variable names to the validation sheet.
+ * @param {!Array} variables An array of variables in a workspace.
  */
-function writeConfigTagNamesToValidationSheet(tags) {
-  const tagNames = tags.reduce((arr, tag) => {
-    if (tag.type == 'gaawc') {
-      arr.push([tag.name]);
+function writeSettingVariableNamesToValidationSheet(variables) {
+  const variableNames = variables.reduce((arr, variable) => {
+    if (variable.type == 'gtes') {
+      arr.push([`{{${variable.name}}}`]);
     }
     return arr;
   }, []);
-  writeToSheet(tagNames, 'validation', 'config tag names');
+  writeToSheet(variableNames, 'validation', 'event setting variable names');
 }
 
 /**

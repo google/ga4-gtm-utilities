@@ -19,6 +19,7 @@
  */
 function writeExistingParamsAndUserPropsToSheet() {
   clearRangeContent('modifyParamsAndUserProps', 'settings');
+  writeGTMVariablesToValidationSheet();
   writeToSheet(
     listParamsAndUserProperties(), 'modifyParamsAndUserProps', 'settings');
 }
@@ -52,6 +53,7 @@ function writeGA4TagsToParamsAndUserPropertiesSheet() {
  */
 function listParamsAndUserProperties() {
   const tags = listGTMResources('tags', getSelectedWorkspacePath());
+  writeGTMVariablesToValidationSheet();
   const ga4EventTags = listGA4EventTags(tags);
   return ga4EventTags.reduce((arr, eventTag) => {
     const eventName = eventTag.parameter.find(
@@ -59,7 +61,7 @@ function listParamsAndUserProperties() {
     eventTag.parameter.forEach(param => {
       if (param.type == 'list') {
         let mapType = '';
-        if (param.key == 'eventParameters') {
+        if (param.key == 'eventSettingsTable') {
           mapType = 'parameter';
         } else if (param.key == 'userProperties') {
           mapType = 'user_property';
@@ -106,7 +108,7 @@ function modifyParametersAndUserProperties() {
       let userPropertiesAdded = false;
       tag.parameter.forEach(param => {
         if (param.type == 'list') {
-          if (param.key == 'eventParameters') {
+          if (param.key == 'eventSettingsTable') {
             param.list = removeParams(
               param.list, paramAndUserPropertySettings.remove.parameter);
             param.list = param.list.concat(
@@ -125,7 +127,7 @@ function modifyParametersAndUserProperties() {
       paramAndUserPropertySettings.create.parameter.length > 0) {
         tag.parameter.push({
           type: 'list',
-          key: 'eventParameters',
+          key: 'eventSettingsTable',
           list: paramAndUserPropertySettings.create.parameter
         });
       }
@@ -180,7 +182,11 @@ function organizeParamsAndUserPropsByTag() {
         };
       }
       if (action == 'Create') {
-        tagObj[tagId].create[type].push(buildMapObject(name, value));
+        if (type == 'parameter') {
+          tagObj[tagId].create[type].push(buildParameterMapObject(name, value));
+        } else if (type == 'user_property') {
+          tagObj[tagId].create[type].push(buildUserPropertyMapObject(name, value));
+        }
       } else if (action == 'Delete') {
         tagObj[tagId].remove[type].push(
           {name: name.toString(), value:value.toString()});
