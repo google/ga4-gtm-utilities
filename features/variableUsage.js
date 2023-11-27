@@ -73,7 +73,7 @@ function checkIfVariableIsInParameters(variableName, parameters) {
   if (parameters) {
     for (let i = 0; i < parameters.length; i++) {
       const param = parameters[i];
-      if (param.key != 'html') {
+      if (param.key != 'html' && param.key != 'javascript') {
         if (variableNameWithBrackets == param.value) {
           return true;
         }
